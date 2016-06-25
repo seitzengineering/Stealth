@@ -16,7 +16,8 @@ import java.io.InputStream;
  */
 public class Assets {
     private static SoundPool soundPool;
-    public static Bitmap welcome, iconimage, bomberpic, MOP, cactus, explode3, bunker, move_right, move_left, move_right_unpressed, move_left_unpressed, fireBomb, fireBombPressed;
+    public static Bitmap welcome, iconimage, bomberpic, MOP, cactus, explode3, bunker, move_right, move_left,
+            move_right_unpressed, move_left_unpressed, fireBomb, fireBombPressed, tank;
     public static Color tan;
 
     public static void load() {
@@ -33,6 +34,7 @@ public class Assets {
         move_left_unpressed = loadBitmap("move_left_unpressed.png", false);
         fireBomb = loadBitmap("fireBomb.png", false);
         fireBombPressed = loadBitmap("fireBombPressed.png", false);
+        tank = loadBitmap("tank2.png", false);
     }
 
     private static Bitmap loadBitmap(String filename, boolean transparency) {

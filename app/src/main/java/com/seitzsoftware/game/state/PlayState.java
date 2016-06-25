@@ -14,6 +14,7 @@ import com.seitzsoftware.game.model.Bunker;
 import com.seitzsoftware.game.model.Cactus;
 import com.seitzsoftware.game.model.Model;
 import com.seitzsoftware.game.model.Player;
+import com.seitzsoftware.game.model.Tank;
 
 import java.util.ArrayList;
 
@@ -26,6 +27,7 @@ public class PlayState extends State {
     private Bomb MOP1, MOP2;
     private Bunker bunker1, bunker2;
     private Cactus cactus1, cactus2, cactus3;
+    private Tank tank1;
 
     private ArrayList<Model> models;
 
@@ -37,6 +39,8 @@ public class PlayState extends State {
     private static final int BUNKER_HEIGHT = 50;
     private static final int CACTUS_WIDTH = 20;
     private static final int CACTUS_HEIGHT = 38;
+    private static final int TANK_WIDTH = 50;
+    private static final int TANK_HEIGHT = 50;
 
     private UIButton moveLeft, moveRight, fireBomb;
 
@@ -48,6 +52,9 @@ public class PlayState extends State {
     public void init() {
         models = new ArrayList<Model>();
         player = new Player(325, 240, PLAYER_WIDTH, PLAYER_HEIGHT);
+
+        tank1 = new Tank(RandomNumberGenerator.getRandIntBetween(200, 600), RandomNumberGenerator.getRandIntBetween(-400, -200) - 200, TANK_WIDTH, TANK_HEIGHT);
+        models.add(tank1);
 
         bunker1 = new Bunker(RandomNumberGenerator.getRandIntBetween(200, 600), RandomNumberGenerator.getRandIntBetween(-400, -200) - 200, BUNKER_WIDTH, BUNKER_HEIGHT);
         models.add(bunker1);
@@ -83,6 +90,7 @@ public class PlayState extends State {
         cactus3.update(delta);
         bunker1.update(delta);
         bunker2.update(delta);
+        tank1.update(delta);
 
         //if any of the 2 models overlap each other, generate another placement for the model to fix it
         while(checkIntersection(cactus1)) {
@@ -99,6 +107,9 @@ public class PlayState extends State {
         }
         while(checkIntersection(bunker2)) {
             bunker2.update(delta);
+        }
+        while(checkIntersection(tank1)) {
+            tank1.update(delta);
         }
 
         MOP1.update(delta);
@@ -130,11 +141,14 @@ public class PlayState extends State {
     private void updateEnemies() {
 
         //TODO need to make the bombs more accurate with what is visually being displayed
+        //TODO find a better way to check the intersections of the bombs here?
 
+        //is bunker 1 alive and did it explode with MOP1
         if(bunker1.getIsAlive() && MOP1.getIsExploded() && Rect.intersects(MOP1.getRect(), bunker1.getRect())) {
             bunker1.isDead();
             playerScore++;
         }
+        //is bunker 1 alive and did it explode with MOP2
         else if(bunker1.getIsAlive() && MOP2.getIsExploded() && Rect.intersects(MOP2.getRect(), bunker1.getRect())) {
             bunker1.isDead();
             playerScore++;
@@ -147,6 +161,14 @@ public class PlayState extends State {
             bunker2.isDead();
             playerScore++;
         }
+        else if(tank1.getIsAlive() && MOP1.getIsExploded() && Rect.intersects(MOP1.getRect(), tank1.getRect())) {
+            tank1.isDead();
+            playerScore++;
+        }
+        else if(tank1.getIsAlive() && MOP2.getIsExploded() && Rect.intersects(MOP2.getRect(), tank1.getRect())) {
+            tank1.isDead();
+            playerScore++;
+        }
     }
 
     private void updateHealth() {
@@ -157,6 +179,10 @@ public class PlayState extends State {
         if(bunker2.getIsAlive() && bunker2.getY() > (GameMainActivity.GAME_HEIGHT -5)) {
             Health--;
             bunker2.isDead();
+        }
+        if(tank1.getIsAlive() && tank1.getY() > (GameMainActivity.GAME_HEIGHT - 5)) {
+            Health--;
+            tank1.isDead();
         }
         if(Health == 0) {
             setCurrentState(new GameOverState(playerScore));
@@ -176,10 +202,14 @@ public class PlayState extends State {
 
     @Override
     public void render(Painter g) {
+
+        //TODO need to add animation for bombs exploding and have them get smaller on screen as time passes
+
         g.setColor(Color.rgb(245, 206, 162));
         g.fillRect(0, 0, GameMainActivity.GAME_WIDTH, GameMainActivity.GAME_HEIGHT);
 
         renderCacti(g);
+        renderTanks(g);
         renderBunker(g);
         renderBombs(g);
         renderPlayer(g);
@@ -189,6 +219,12 @@ public class PlayState extends State {
         moveLeft.render(g);
         moveRight.render(g);
         fireBomb.render(g);
+    }
+
+    private void renderTanks(Painter g) {
+        if(tank1.getIsAlive()) {
+            g.drawImage(Assets.tank, tank1.getX(), tank1.getY(), 80, 90);
+        }
     }
 
     private void renderHealth(Painter g) {
@@ -217,7 +253,7 @@ public class PlayState extends State {
 
     private void renderAmmo(Painter g) {
         g.setColor(Color.BLACK);
-        g.drawString("MOP", 700, 35);
+        //g.drawString("MOP", 700, 35);
         int j = 0;
         for(int i = 0; i < Ammo; i++) {
             g.drawImage(Assets.MOP, 690 + j, 50, 21, 42);
